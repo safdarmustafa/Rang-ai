@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.ui.layout.ContentScale
 import com.example.rangai.viewmodel.HomeViewModel
+import com.example.rangai.data.EnhancementType
 
 
 @Composable
@@ -26,6 +27,10 @@ fun HomeScreen() {
 
     var selectedImageUri by remember {
         mutableStateOf<Uri?>(null)
+    }
+
+    var selectedEnhancement by remember {
+        mutableStateOf(EnhancementType.HD)
     }
 
     val launcher = rememberLauncherForActivityResult(
@@ -86,6 +91,32 @@ fun HomeScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            FilterChip(
+                selected = selectedEnhancement == EnhancementType.HD,
+                onClick = {
+                    selectedEnhancement = EnhancementType.HD
+                },
+                label = {
+                    Text("HD")
+                }
+            )
+
+            FilterChip(
+                selected = selectedEnhancement == EnhancementType.ULTRA_HD,
+                onClick = {
+                    selectedEnhancement = EnhancementType.ULTRA_HD
+                },
+                label = {
+                    Text("Ultra HD")
+                }
+            )
+        }
+
         Button(
             onClick = {
                 launcher.launch(
@@ -94,7 +125,8 @@ fun HomeScreen() {
                     )
                 )
             }
-        ) {
+        )
+        {
             Text("Select Image")
         }
 
