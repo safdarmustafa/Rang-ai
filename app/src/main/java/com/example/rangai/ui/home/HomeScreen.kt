@@ -8,7 +8,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import coil.compose.AsyncImage
@@ -17,12 +16,17 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.compose.ui.layout.ContentScale
 import com.example.rangai.viewmodel.HomeViewModel
 import com.example.rangai.data.EnhancementType
+import android.util.Log
+import android.net.Uri
+import com.example.rangai.data.repository.StorageRepository
+import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
 fun HomeScreen() {
 
     val homeViewModel: HomeViewModel = viewModel()
+    val context = LocalContext.current
     val isLoading by homeViewModel.isLoading.collectAsState()
 
     var selectedImageUri by remember {
@@ -134,9 +138,37 @@ fun HomeScreen() {
 
         Button(
             onClick = {
-                homeViewModel.startEnhancing()
+
+                android.util.Log.d(
+                    "RANG_AI",
+                    "Enhance button clicked"
+                )
+
+                selectedImageUri?.let { uri ->
+
+                    android.util.Log.d(
+                        "RANG_AI",
+                        "Uri found: $uri"
+                    )
+
+                    val imageBytes = context.contentResolver
+                        .openInputStream(uri)
+                        ?.readBytes()
+
+                    android.util.Log.d(
+                        "RANG_AI",
+                        "Bytes size: ${imageBytes?.size}"
+                    )
+
+                    if (imageBytes != null) {
+
+                        homeViewModel.startEnhancing(
+                            imageBytes = imageBytes
+                        )
+                    }
+                }
             },
-            enabled = selectedImageUri != null
+            enabled = selectedImageUri != null && !isLoading
         ) {
             Text(
                 if (isLoading)

@@ -1,10 +1,11 @@
 import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
-
 android {
+
     namespace = "com.example.rangai"
 
     val localProperties = Properties()
@@ -15,8 +16,13 @@ android {
 
     val replicateApiKey =
         localProperties.getProperty("REPLICATE_API_KEY") ?: ""
-    defaultConfig {
-    }
+
+    val supabaseUrl =
+        localProperties.getProperty("SUPABASE_URL") ?: ""
+
+    val supabaseAnonKey =
+        localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
+
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -37,6 +43,18 @@ android {
             "REPLICATE_API_KEY",
             "\"$replicateApiKey\""
         )
+
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"$supabaseUrl\""
+        )
+
+        buildConfigField(
+            "String",
+            "SUPABASE_ANON_KEY",
+            "\"$supabaseAnonKey\""
+        )
     }
 
     buildTypes {
@@ -46,38 +64,64 @@ android {
             }
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
     buildFeatures {
         compose = true
         buildConfig = true
     }
 }
 
-
+// Dependencies block
 dependencies {
-    implementation("com.squareup.retrofit2:retrofit:2.11.0") // Networking Dependencies
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0") // Networking Dependencies
-    implementation("com.squareup.okhttp3:okhttp:4.12.0") // Networking Dependencies
+
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // OkHttp
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Navigation
     implementation("androidx.navigation:navigation-compose:2.9.0")
+
+    // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
+
+    // Coil
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    // Supabase
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
+    implementation("io.github.jan-tennert.supabase:storage-kt:3.1.4")
+    implementation("io.github.jan-tennert.supabase:auth-kt:3.1.4")
+    implementation("io.ktor:ktor-client-okhttp:3.1.3")
+
+    // Compose
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+
+    // Core
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+
+    // Testing
     testImplementation(libs.junit)
+
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 }
