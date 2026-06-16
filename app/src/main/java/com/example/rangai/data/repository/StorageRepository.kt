@@ -16,7 +16,7 @@ class StorageRepository {
     suspend fun uploadImage(
         fileName: String,
         imageBytes: ByteArray
-    ) {
+    ): String {
 
         android.util.Log.d(
             "RANG_AI",
@@ -32,5 +32,15 @@ class StorageRepository {
             "RANG_AI",
             "Upload completed"
         )
+
+        val publicUrl =
+            bucket.publicUrl(fileName)
+
+        android.util.Log.d(
+            "RANG_AI",
+            "Public URL: $publicUrl"
+        )
+
+        return publicUrl
     }
 }

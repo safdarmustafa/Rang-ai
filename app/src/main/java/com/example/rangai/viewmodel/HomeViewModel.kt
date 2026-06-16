@@ -15,6 +15,12 @@ class HomeViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _uploadedImageUrl =
+        MutableStateFlow<String?>(null)
+
+    val uploadedImageUrl: StateFlow<String?> =
+        _uploadedImageUrl
+
     fun startEnhancing(
         imageBytes: ByteArray
     ) {
@@ -29,9 +35,17 @@ class HomeViewModel : ViewModel() {
 
             try {
 
-                storageRepository.uploadImage(
-                    fileName = "test_${System.currentTimeMillis()}.jpg",
-                    imageBytes = imageBytes
+                val imageUrl =
+                    storageRepository.uploadImage(
+                        fileName = "test_${System.currentTimeMillis()}.jpg",
+                        imageBytes = imageBytes
+                    )
+
+                _uploadedImageUrl.value = imageUrl
+
+                android.util.Log.d(
+                    "RANG_AI",
+                    "IMAGE URL = $imageUrl"
                 )
 
             } catch (e: Exception) {
