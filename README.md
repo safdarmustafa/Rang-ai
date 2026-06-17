@@ -75,6 +75,7 @@ text Splash Screen       ↓ Login       ↓ OTP Verification       ↓ Home Scr
 | StateFlow | State Management |
 | Coil | Image Loading |
 | Git & GitHub | Version Control |
+| replicate ai  | RealEsrGan Model used currently added only 4 credits  |
 
 ---
 
@@ -125,7 +126,7 @@ Rang AI is being built with a simple vision:
 
 <div align="center">
 
-### Built with ❤️ by Safdar Mustafa
+### Built with love and kindness ❤️ by Safdar Mustafa
 
 Android Developer • Researcher • Builder
 
