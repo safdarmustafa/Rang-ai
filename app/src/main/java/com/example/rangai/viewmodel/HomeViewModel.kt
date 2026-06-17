@@ -6,11 +6,15 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import com.example.rangai.data.repository.StorageRepository
+import com.example.rangai.data.repository.ReplicateRepository
 
 class HomeViewModel : ViewModel() {
 
     private val storageRepository =
         StorageRepository()
+
+    private val replicateRepository =
+        ReplicateRepository()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -48,11 +52,20 @@ class HomeViewModel : ViewModel() {
                     "IMAGE URL = $imageUrl"
                 )
 
+                android.util.Log.d(
+                    "RANG_AI",
+                    "Calling Replicate..."
+                )
+
+                replicateRepository.enhanceImage(
+                    imageUrl
+                )
+
             } catch (e: Exception) {
 
                 android.util.Log.e(
                     "RANG_AI",
-                    "UPLOAD FAILED",
+                    "PROCESS FAILED",
                     e
                 )
             } finally {

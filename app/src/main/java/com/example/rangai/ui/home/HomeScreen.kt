@@ -20,6 +20,9 @@ import android.util.Log
 import android.net.Uri
 import com.example.rangai.data.repository.StorageRepository
 import androidx.compose.ui.platform.LocalContext
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import java.io.ByteArrayOutputStream
 
 
 @Composable
@@ -151,19 +154,47 @@ fun HomeScreen() {
                         "Uri found: $uri"
                     )
 
-                    val imageBytes = context.contentResolver
+                    val originalBytes = context.contentResolver
                         .openInputStream(uri)
                         ?.readBytes()
 
-                    android.util.Log.d(
-                        "RANG_AI",
-                        "Bytes size: ${imageBytes?.size}"
-                    )
+                    if (originalBytes != null) {
 
-                    if (imageBytes != null) {
+                        val bitmap = BitmapFactory.decodeByteArray(
+                            originalBytes,
+                            0,
+                            originalBytes.size
+                        )
+
+                        val resizedBitmap = Bitmap.createScaledBitmap(
+                            bitmap,
+                            1024,
+                            1024,
+                            true
+                        )
+
+                        val outputStream = ByteArrayOutputStream()
+
+                        resizedBitmap.compress(
+                            Bitmap.CompressFormat.JPEG,
+                            90,
+                            outputStream
+                        )
+
+                        val resizedBytes = outputStream.toByteArray()
+
+                        android.util.Log.d(
+                            "RANG_AI",
+                            "Original Bytes = ${originalBytes.size}"
+                        )
+
+                        android.util.Log.d(
+                            "RANG_AI",
+                            "Resized Bytes = ${resizedBytes.size}"
+                        )
 
                         homeViewModel.startEnhancing(
-                            imageBytes = imageBytes
+                            imageBytes = resizedBytes
                         )
                     }
                 }
