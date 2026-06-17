@@ -10,7 +10,7 @@ class ReplicateRepository {
 
     suspend fun enhanceImage(
         imageUrl: String
-    ) {
+    ): String? {
 
         try {
 
@@ -56,7 +56,7 @@ class ReplicateRepository {
             )
 
             val getUrl =
-                prediction?.urls?.get ?: return
+                prediction?.urls?.get ?: return null
 
             var status = prediction.status
 
@@ -101,7 +101,7 @@ class ReplicateRepository {
                         "SUCCESS URL = $enhancedImageUrl"
                     )
 
-                    break
+                    return enhancedImageUrl
                 }
 
                 if (status == "failed") {
@@ -111,7 +111,7 @@ class ReplicateRepository {
                         "FAILED = ${result?.error}"
                     )
 
-                    break
+                    return null
                 }
             }
         } catch (e: Exception) {
@@ -122,5 +122,6 @@ class ReplicateRepository {
                 e
             )
         }
+        return null
     }
 }

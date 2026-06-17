@@ -23,14 +23,22 @@ import androidx.compose.ui.platform.LocalContext
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import java.io.ByteArrayOutputStream
-
+import androidx.navigation.NavController
+import androidx.compose.runtime.LaunchedEffect
+import com.example.rangai.navigation.Screen
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    navController: NavController
+) {
 
     val homeViewModel: HomeViewModel = viewModel()
     val context = LocalContext.current
     val isLoading by homeViewModel.isLoading.collectAsState()
+
+    val enhancedImageUrl by homeViewModel
+        .enhancedImageUrl
+        .collectAsState()
 
     var selectedImageUri by remember {
         mutableStateOf<Uri?>(null)
@@ -45,6 +53,20 @@ fun HomeScreen() {
     ) { uri ->
 
         selectedImageUri = uri
+    }
+
+    LaunchedEffect(enhancedImageUrl) {
+
+        enhancedImageUrl?.let { imageUrl ->
+
+            navController.navigate(
+                Screen.Result.createRoute(imageUrl)
+            ) {
+                launchSingleTop = true
+            }
+
+            homeViewModel.clearEnhancedImage()
+        }
     }
 
     Column(

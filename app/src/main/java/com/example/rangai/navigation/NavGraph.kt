@@ -7,6 +7,11 @@ import androidx.navigation.compose.rememberNavController
 import com.example.rangai.ui.login.LoginScreen
 import com.example.rangai.ui.login.OtpScreen
 import com.example.rangai.ui.login.SplashScreen
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
+import com.example.rangai.ui.result.ResultScreen
+
+
 
 @Composable
 fun NavGraph() {
@@ -57,7 +62,27 @@ fun NavGraph() {
             )
         }
         composable(Screen.Home.route) {
-            HomeScreen()
+
+            HomeScreen(
+                navController = navController
+            )
+        }
+        composable(
+            route = Screen.Result.route,
+            arguments = listOf(
+                navArgument("imageUrl") {
+                    type = NavType.StringType
+                }
+            )
+        ) {
+
+            val imageUrl =
+                it.arguments?.getString("imageUrl")
+                    ?: ""
+
+            ResultScreen(
+                imageUrl = imageUrl
+            )
         }
     }
 }

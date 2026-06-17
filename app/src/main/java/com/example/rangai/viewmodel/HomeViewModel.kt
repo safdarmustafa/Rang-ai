@@ -1,12 +1,12 @@
 package com.example.rangai.viewmodel
 
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.rangai.data.repository.ReplicateRepository
+import com.example.rangai.data.repository.StorageRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import com.example.rangai.data.repository.StorageRepository
-import com.example.rangai.data.repository.ReplicateRepository
+import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
@@ -16,8 +16,11 @@ class HomeViewModel : ViewModel() {
     private val replicateRepository =
         ReplicateRepository()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading
+    private val _isLoading =
+        MutableStateFlow(false)
+
+    val isLoading: StateFlow<Boolean> =
+        _isLoading
 
     private val _uploadedImageUrl =
         MutableStateFlow<String?>(null)
@@ -25,9 +28,16 @@ class HomeViewModel : ViewModel() {
     val uploadedImageUrl: StateFlow<String?> =
         _uploadedImageUrl
 
+    private val _enhancedImageUrl =
+        MutableStateFlow<String?>(null)
+
+    val enhancedImageUrl: StateFlow<String?> =
+        _enhancedImageUrl
+
     fun startEnhancing(
         imageBytes: ByteArray
     ) {
+
         android.util.Log.d(
             "RANG_AI",
             "startEnhancing called"
@@ -45,7 +55,8 @@ class HomeViewModel : ViewModel() {
                         imageBytes = imageBytes
                     )
 
-                _uploadedImageUrl.value = imageUrl
+                _uploadedImageUrl.value =
+                    imageUrl
 
                 android.util.Log.d(
                     "RANG_AI",
@@ -57,8 +68,17 @@ class HomeViewModel : ViewModel() {
                     "Calling Replicate..."
                 )
 
-                replicateRepository.enhanceImage(
-                    imageUrl
+                val enhancedUrl =
+                    replicateRepository.enhanceImage(
+                        imageUrl
+                    )
+
+                _enhancedImageUrl.value =
+                    enhancedUrl
+
+                android.util.Log.d(
+                    "RANG_AI",
+                    "VIEWMODEL URL = $enhancedUrl"
                 )
 
             } catch (e: Exception) {
@@ -68,6 +88,7 @@ class HomeViewModel : ViewModel() {
                     "PROCESS FAILED",
                     e
                 )
+
             } finally {
 
                 _isLoading.value = false
@@ -76,6 +97,12 @@ class HomeViewModel : ViewModel() {
     }
 
     fun stopEnhancing() {
+
         _isLoading.value = false
+    }
+    fun clearEnhancedImage() {
+
+        _enhancedImageUrl.value = null
+
     }
 }
