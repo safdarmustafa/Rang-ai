@@ -1,37 +1,68 @@
 package com.example.rangai.ui.home
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.collectAsState
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import coil.compose.AsyncImage
-import androidx.compose.runtime.*
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.compose.ui.layout.ContentScale
-import com.example.rangai.viewmodel.HomeViewModel
-import com.example.rangai.data.EnhancementType
-import android.util.Log
-import android.net.Uri
-import com.example.rangai.data.repository.StorageRepository
-import androidx.compose.ui.platform.LocalContext
+
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import java.io.ByteArrayOutputStream
-import androidx.navigation.NavController
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddPhotoAlternate
+import androidx.compose.material.icons.outlined.AutoAwesome
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.rangai.data.EnhancementType
 import com.example.rangai.navigation.Screen
+import com.example.rangai.ui.components.EnhancementChipRow
+import com.example.rangai.ui.components.GlassCard
+import com.example.rangai.ui.components.GradientButton
+import com.example.rangai.ui.components.PremiumBackground
+import com.example.rangai.ui.components.PremiumLoadingOverlay
+import com.example.rangai.ui.theme.ImagePreviewShape
+import com.example.rangai.ui.theme.TextSecondary
+import com.example.rangai.ui.theme.TextTertiary
+import com.example.rangai.ui.theme.WarmRedAccent
+import com.example.rangai.viewmodel.HomeViewModel
+import java.io.ByteArrayOutputStream
 
 @Composable
 fun HomeScreen(
     navController: NavController
 ) {
-
     val homeViewModel: HomeViewModel = viewModel()
     val context = LocalContext.current
     val isLoading by homeViewModel.isLoading.collectAsState()
@@ -51,225 +82,253 @@ fun HomeScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
-
         selectedImageUri = uri
     }
 
     LaunchedEffect(enhancedImageUrl) {
-
         enhancedImageUrl?.let { imageUrl ->
-
+            val originalUri = selectedImageUri?.toString() ?: ""
             navController.navigate(
-                Screen.Result.createRoute(imageUrl)
+                Screen.Result.createRoute(imageUrl, originalUri)
             ) {
                 launchSingleTop = true
             }
-
             homeViewModel.clearEnhancedImage()
         }
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text(
-            text = "Rang AI",
-            style = MaterialTheme.typography.headlineLarge
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "AI Powered Photo Enhancement"
-        )
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(350.dp)
-        ) {
-
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
+    PremiumBackground {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 24.dp)
+                    .padding(top = 56.dp, bottom = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                HomeHeader()
 
-                if (selectedImageUri != null) {
+                Spacer(modifier = Modifier.height(32.dp))
 
-                    AsyncImage(
-                        model = selectedImageUri,
-                        contentDescription = "Selected Image",
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Fit
-                    )
-
-                } else {
-
-                    Text("No Image Selected")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-
-            FilterChip(
-                selected = selectedEnhancement == EnhancementType.HD,
-                onClick = {
-                    selectedEnhancement = EnhancementType.HD
-                },
-                label = {
-                    Text("HD")
-                }
-            )
-
-            FilterChip(
-                selected = selectedEnhancement == EnhancementType.ULTRA_HD,
-                onClick = {
-                    selectedEnhancement = EnhancementType.ULTRA_HD
-                },
-                label = {
-                    Text("Ultra HD")
-                }
-            )
-        }
-
-        Button(
-            onClick = {
-                launcher.launch(
-                    PickVisualMediaRequest(
-                        ActivityResultContracts.PickVisualMedia.ImageOnly
-                    )
-                )
-            }
-        )
-        {
-            Text("Select Image")
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Button(
-            onClick = {
-
-                android.util.Log.d(
-                    "RANG_AI",
-                    "Enhance button clicked"
+                ImagePreviewCard(
+                    selectedImageUri = selectedImageUri
                 )
 
-                selectedImageUri?.let { uri ->
+                Spacer(modifier = Modifier.height(28.dp))
 
-                    android.util.Log.d(
-                        "RANG_AI",
-                        "Uri found: $uri"
-                    )
+                Text(
+                    text = "Enhancement Quality",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextSecondary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)
+                )
 
-                    val originalBytes = context.contentResolver
-                        .openInputStream(uri)
-                        ?.readBytes()
+                EnhancementChipRow(
+                    hdSelected = selectedEnhancement == EnhancementType.HD,
+                    onHdClick = { selectedEnhancement = EnhancementType.HD },
+                    onUltraHdClick = { selectedEnhancement = EnhancementType.ULTRA_HD }
+                )
 
-                    if (originalBytes != null) {
+                Spacer(modifier = Modifier.height(28.dp))
 
-                        val bitmap = BitmapFactory.decodeByteArray(
-                            originalBytes,
-                            0,
-                            originalBytes.size
+                GradientButton(
+                    text = "Select Image",
+                    onClick = {
+                        launcher.launch(
+                            PickVisualMediaRequest(
+                                ActivityResultContracts.PickVisualMedia.ImageOnly
+                            )
                         )
+                    },
+                    icon = Icons.Outlined.AddPhotoAlternate
+                )
 
-                        val originalWidth = bitmap.width
-                        val originalHeight = bitmap.height
+                Spacer(modifier = Modifier.height(12.dp))
 
-                        val maxDimension = maxOf(
-                            originalWidth,
-                            originalHeight
-                        )
+                GradientButton(
+                    text = if (isLoading) "Enhancing..." else "Enhance Image",
+                    onClick = {
+                        Log.d("RANG_AI", "Enhance button clicked")
 
-                        val scaleFactor = 1024f / maxDimension
+                        selectedImageUri?.let { uri ->
+                            Log.d("RANG_AI", "Uri found: $uri")
 
-                        val newWidth =
-                            (originalWidth * scaleFactor).toInt()
+                            val originalBytes = context.contentResolver
+                                .openInputStream(uri)
+                                ?.readBytes()
 
-                        val newHeight =
-                            (originalHeight * scaleFactor).toInt()
+                            if (originalBytes != null) {
+                                val bitmap = BitmapFactory.decodeByteArray(
+                                    originalBytes,
+                                    0,
+                                    originalBytes.size
+                                )
 
-                        Log.d(
-                            "RANG_AI",
-                            "Original Size = ${originalWidth}x${originalHeight}"
-                        )
+                                val originalWidth = bitmap.width
+                                val originalHeight = bitmap.height
 
-                        Log.d(
-                            "RANG_AI",
-                            "Resized Size = ${newWidth}x${newHeight}"
-                        )
+                                val maxDimension = maxOf(
+                                    originalWidth,
+                                    originalHeight
+                                )
 
-                        val resizedBitmap = Bitmap.createScaledBitmap(
-                            bitmap,
-                            newWidth,
-                            newHeight,
-                            true
-                        )
+                                val scaleFactor = 1024f / maxDimension
 
-                        val outputStream = ByteArrayOutputStream()
+                                val newWidth =
+                                    (originalWidth * scaleFactor).toInt()
 
-                        resizedBitmap.compress(
-                            Bitmap.CompressFormat.JPEG,
-                            90,
-                            outputStream
-                        )
+                                val newHeight =
+                                    (originalHeight * scaleFactor).toInt()
 
-                        val resizedBytes = outputStream.toByteArray()
+                                Log.d(
+                                    "RANG_AI",
+                                    "Original Size = ${originalWidth}x${originalHeight}"
+                                )
 
-                        android.util.Log.d(
-                            "RANG_AI",
-                            "Original Bytes = ${originalBytes.size}"
-                        )
+                                Log.d(
+                                    "RANG_AI",
+                                    "Resized Size = ${newWidth}x${newHeight}"
+                                )
 
-                        android.util.Log.d(
-                            "RANG_AI",
-                            "Resized Bytes = ${resizedBytes.size}"
-                        )
+                                val resizedBitmap = Bitmap.createScaledBitmap(
+                                    bitmap,
+                                    newWidth,
+                                    newHeight,
+                                    true
+                                )
 
-                        val scale = when (selectedEnhancement) {
-                            EnhancementType.HD -> 2
-                            EnhancementType.ULTRA_HD -> 4
+                                val outputStream = ByteArrayOutputStream()
+
+                                resizedBitmap.compress(
+                                    Bitmap.CompressFormat.JPEG,
+                                    90,
+                                    outputStream
+                                )
+
+                                val resizedBytes = outputStream.toByteArray()
+
+                                Log.d(
+                                    "RANG_AI",
+                                    "Original Bytes = ${originalBytes.size}"
+                                )
+
+                                Log.d(
+                                    "RANG_AI",
+                                    "Resized Bytes = ${resizedBytes.size}"
+                                )
+
+                                val scale = when (selectedEnhancement) {
+                                    EnhancementType.HD -> 2
+                                    EnhancementType.ULTRA_HD -> 4
+                                }
+
+                                homeViewModel.startEnhancing(
+                                    imageBytes = resizedBytes,
+                                    scale = scale
+                                )
+                                Log.d(
+                                    "RANG_AI",
+                                    "Selected Enhancement = $selectedEnhancement"
+                                )
+
+                                Log.d(
+                                    "RANG_AI",
+                                    "Scale = $scale"
+                                )
+                            }
                         }
+                    },
+                    enabled = selectedImageUri != null && !isLoading,
+                    isLoading = isLoading,
+                    icon = Icons.Outlined.AutoAwesome
+                )
+            }
 
-                        homeViewModel.startEnhancing(
-                            imageBytes = resizedBytes,
-                            scale = scale
-                        )
-                        Log.d(
-                            "RANG_AI",
-                            "Selected Enhancement = $selectedEnhancement"
-                        )
+            if (isLoading) {
+                PremiumLoadingOverlay()
+            }
+        }
+    }
+}
 
-                        Log.d(
-                            "RANG_AI",
-                            "Scale = $scale"
-                        )
-                    }
-                }
-            },
-            enabled = selectedImageUri != null && !isLoading
+@Composable
+private fun HomeHeader() {
+    AnimatedVisibility(
+        visible = true,
+        enter = fadeIn() + slideInVertically { it / 4 }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                if (isLoading)
-                    "Enhancing..."
-                else
-                    "Enhance Image"
+                text = "Rang AI",
+                style = MaterialTheme.typography.displayMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                fontWeight = FontWeight.Bold
             )
+            Text(
+                text = "Premium AI Photo Enhancement",
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextSecondary
+            )
+            Text(
+                text = "Transform ordinary photos into stunning visuals",
+                style = MaterialTheme.typography.bodySmall,
+                color = TextTertiary
+            )
+        }
+    }
+}
+
+@Composable
+private fun ImagePreviewCard(
+    selectedImageUri: Uri?
+) {
+    GlassCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(340.dp)
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (selectedImageUri != null) {
+                AsyncImage(
+                    model = selectedImageUri,
+                    contentDescription = "Selected Image",
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(ImagePreviewShape),
+                    contentScale = ContentScale.Fit
+                )
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Image,
+                        contentDescription = null,
+                        tint = WarmRedAccent.copy(alpha = 0.6f),
+                        modifier = Modifier.size(56.dp)
+                    )
+                    Text(
+                        text = "No Image Selected",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "Choose a photo to enhance",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextTertiary
+                    )
+                }
+            }
         }
     }
 }
