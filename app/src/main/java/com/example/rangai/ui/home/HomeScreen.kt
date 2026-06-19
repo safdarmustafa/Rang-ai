@@ -188,10 +188,36 @@ fun HomeScreen(
                             originalBytes.size
                         )
 
+                        val originalWidth = bitmap.width
+                        val originalHeight = bitmap.height
+
+                        val maxDimension = maxOf(
+                            originalWidth,
+                            originalHeight
+                        )
+
+                        val scaleFactor = 1024f / maxDimension
+
+                        val newWidth =
+                            (originalWidth * scaleFactor).toInt()
+
+                        val newHeight =
+                            (originalHeight * scaleFactor).toInt()
+
+                        Log.d(
+                            "RANG_AI",
+                            "Original Size = ${originalWidth}x${originalHeight}"
+                        )
+
+                        Log.d(
+                            "RANG_AI",
+                            "Resized Size = ${newWidth}x${newHeight}"
+                        )
+
                         val resizedBitmap = Bitmap.createScaledBitmap(
                             bitmap,
-                            1024,
-                            1024,
+                            newWidth,
+                            newHeight,
                             true
                         )
 
@@ -215,8 +241,23 @@ fun HomeScreen(
                             "Resized Bytes = ${resizedBytes.size}"
                         )
 
+                        val scale = when (selectedEnhancement) {
+                            EnhancementType.HD -> 2
+                            EnhancementType.ULTRA_HD -> 4
+                        }
+
                         homeViewModel.startEnhancing(
-                            imageBytes = resizedBytes
+                            imageBytes = resizedBytes,
+                            scale = scale
+                        )
+                        Log.d(
+                            "RANG_AI",
+                            "Selected Enhancement = $selectedEnhancement"
+                        )
+
+                        Log.d(
+                            "RANG_AI",
+                            "Scale = $scale"
                         )
                     }
                 }

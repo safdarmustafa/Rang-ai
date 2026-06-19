@@ -35,7 +35,8 @@ class HomeViewModel : ViewModel() {
         _enhancedImageUrl
 
     fun startEnhancing(
-        imageBytes: ByteArray
+        imageBytes: ByteArray,
+        scale: Int
     ) {
 
         android.util.Log.d(
@@ -70,7 +71,8 @@ class HomeViewModel : ViewModel() {
 
                 val enhancedUrl =
                     replicateRepository.enhanceImage(
-                        imageUrl
+                        imageUrl = imageUrl,
+                        scale = scale
                     )
 
                 _enhancedImageUrl.value =

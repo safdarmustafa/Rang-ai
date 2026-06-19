@@ -9,7 +9,8 @@ import kotlinx.coroutines.delay
 class ReplicateRepository {
 
     suspend fun enhanceImage(
-        imageUrl: String
+        imageUrl: String,
+        scale: Int
     ): String? {
 
         try {
@@ -18,7 +19,7 @@ class ReplicateRepository {
                 ReplicateRequest(
                     input = Input(
                         image = imageUrl,
-                        scale = 2
+                        scale = scale
                     )
                 )
 
