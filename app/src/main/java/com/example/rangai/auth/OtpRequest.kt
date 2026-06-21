@@ -1,3 +1,5 @@
 package com.example.rangai.auth
 
-data class OtpRequest()
+data class OtpRequest(
+    val phoneNumber: String
+)

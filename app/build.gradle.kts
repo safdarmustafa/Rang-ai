@@ -23,6 +23,9 @@ android {
     val supabaseAnonKey =
         localProperties.getProperty("SUPABASE_ANON_KEY") ?: ""
 
+    val fast2SmsApiKey =
+        localProperties.getProperty("FAST2SMS_API_KEY") ?: ""
+
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
@@ -54,6 +57,11 @@ android {
             "String",
             "SUPABASE_ANON_KEY",
             "\"$supabaseAnonKey\""
+        )
+        buildConfigField(
+            "String",
+            "FAST2SMS_API_KEY",
+            "\"$fast2SmsApiKey\""
         )
     }
 

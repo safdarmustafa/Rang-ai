@@ -17,7 +17,7 @@ import com.example.rangai.ui.login.LoginScreen
 import com.example.rangai.ui.login.OtpScreen
 import com.example.rangai.ui.login.SplashScreen
 import com.example.rangai.ui.result.ResultScreen
-
+import com.example.rangai.ui.profile.ProfileSetupScreen
 private const val TRANSITION_DURATION = 350
 
 @Composable
@@ -77,13 +77,22 @@ fun NavGraph() {
         composable(Screen.Otp.route) {
             OtpScreen(
                 onVerify = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
+                    navController.navigate(Screen.Profile.route)
                 }
             )
         }
 
+        composable(Screen.Profile.route) {
+            ProfileSetupScreen(
+                onContinue = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
+        }
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }

@@ -31,7 +31,7 @@ import com.example.rangai.ui.components.PremiumTextField
 
 @Composable
 fun OtpScreen(
-    onVerify: () -> Unit
+    onVerify: (String) -> Unit
 ) {
     var otp by remember {
         mutableStateOf("")
@@ -73,7 +73,9 @@ fun OtpScreen(
 
                 GradientButton(
                     text = "Verify & Continue",
-                    onClick = onVerify,
+                    onClick = {
+                        onVerify(otp)
+                    },
                     icon = Icons.Outlined.Verified
                 )
             }
