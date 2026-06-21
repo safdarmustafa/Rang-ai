@@ -31,7 +31,7 @@ import com.example.rangai.ui.components.PremiumTextField
 
 @Composable
 fun LoginScreen(
-    onSendOtp: () -> Unit
+    onSendOtp: (String) -> Unit
 ) {
     var phoneNumber by remember {
         mutableStateOf("")
@@ -73,7 +73,9 @@ fun LoginScreen(
 
                 GradientButton(
                     text = "Send OTP",
-                    onClick = onSendOtp,
+                    onClick = {
+                        onSendOtp(phoneNumber)
+                    },
                     icon = Icons.AutoMirrored.Outlined.Send
                 )
             }
