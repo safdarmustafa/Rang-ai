@@ -6,105 +6,77 @@ import com.example.rangai.data.repository.ReplicateRepository
 import com.example.rangai.data.repository.StorageRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class HomeViewModel : ViewModel() {
 
-    private val storageRepository =
-        StorageRepository()
+    private val storageRepository = StorageRepository()
+    private val replicateRepository = ReplicateRepository()
 
-    private val replicateRepository =
-        ReplicateRepository()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    private val _isLoading =
-        MutableStateFlow(false)
+    private val _uploadedImageUrl = MutableStateFlow<String?>(null)
+    val uploadedImageUrl: StateFlow<String?> = _uploadedImageUrl.asStateFlow()
 
-    val isLoading: StateFlow<Boolean> =
-        _isLoading
+    private val _enhancedImageUrl = MutableStateFlow<String?>(null)
+    val enhancedImageUrl: StateFlow<String?> = _enhancedImageUrl.asStateFlow()
 
-    private val _uploadedImageUrl =
-        MutableStateFlow<String?>(null)
-
-    val uploadedImageUrl: StateFlow<String?> =
-        _uploadedImageUrl
-
-    private val _enhancedImageUrl =
-        MutableStateFlow<String?>(null)
-
-    val enhancedImageUrl: StateFlow<String?> =
-        _enhancedImageUrl
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     fun startEnhancing(
         imageBytes: ByteArray,
         scale: Int
     ) {
-
-        android.util.Log.d(
-            "RANG_AI",
-            "startEnhancing called"
-        )
+        android.util.Log.d("RANG_AI", "startEnhancing called — scale=$scale bytes=${imageBytes.size}")
 
         viewModelScope.launch {
-
             _isLoading.value = true
+            _errorMessage.value = null
 
             try {
+                val imageUrl = storageRepository.uploadImage(
+                    fileName = "test_${System.currentTimeMillis()}.jpg",
+                    imageBytes = imageBytes
+                )
+                _uploadedImageUrl.value = imageUrl
+                android.util.Log.d("RANG_AI", "IMAGE URL = $imageUrl")
 
-                val imageUrl =
-                    storageRepository.uploadImage(
-                        fileName = "test_${System.currentTimeMillis()}.jpg",
-                        imageBytes = imageBytes
-                    )
-
-                _uploadedImageUrl.value =
-                    imageUrl
-
-                android.util.Log.d(
-                    "RANG_AI",
-                    "IMAGE URL = $imageUrl"
+                android.util.Log.d("RANG_AI", "Calling Replicate...")
+                val enhancedUrl = replicateRepository.enhanceImage(
+                    imageUrl = imageUrl,
+                    scale = scale
                 )
 
-                android.util.Log.d(
-                    "RANG_AI",
-                    "Calling Replicate..."
-                )
+                if (enhancedUrl.isNullOrBlank()) {
+                    _errorMessage.value =
+                        "Enhancement failed. Check Replicate API key, credits, and Logcat tag RANG_AI."
+                    android.util.Log.e("RANG_AI", "Replicate returned no image URL")
+                    return@launch
+                }
 
-                val enhancedUrl =
-                    replicateRepository.enhanceImage(
-                        imageUrl = imageUrl,
-                        scale = scale
-                    )
-
-                _enhancedImageUrl.value =
-                    enhancedUrl
-
-                android.util.Log.d(
-                    "RANG_AI",
-                    "VIEWMODEL URL = $enhancedUrl"
-                )
-
+                _enhancedImageUrl.value = enhancedUrl
+                android.util.Log.d("RANG_AI", "VIEWMODEL URL = $enhancedUrl")
             } catch (e: Exception) {
-
-                android.util.Log.e(
-                    "RANG_AI",
-                    "PROCESS FAILED",
-                    e
-                )
-
+                android.util.Log.e("RANG_AI", "PROCESS FAILED", e)
+                _errorMessage.value = e.message ?: "Something went wrong while enhancing the image."
             } finally {
-
                 _isLoading.value = false
             }
         }
     }
 
-    fun stopEnhancing() {
-
-        _isLoading.value = false
+    fun clearError() {
+        _errorMessage.value = null
     }
+
+    fun reportError(message: String) {
+        _errorMessage.value = message
+    }
+
     fun clearEnhancedImage() {
-
         _enhancedImageUrl.value = null
-
     }
 }

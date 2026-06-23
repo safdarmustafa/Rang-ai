@@ -7,39 +7,42 @@ import io.github.jan.supabase.storage.upload
 
 class StorageRepository {
 
-    private val supabase =
-        SupabaseClient.client
+    companion object {
+        const val BUCKET_NAME = "rang-ai-images"
+    }
+
+    private val supabase = SupabaseClient.client
 
     private val bucket: BucketApi =
-        supabase.storage.from("rang-ai-images")
+        supabase.storage.from(BUCKET_NAME)
 
     suspend fun uploadImage(
         fileName: String,
         imageBytes: ByteArray
     ): String {
+        android.util.Log.d("RANG_AI", "Uploading started: $fileName")
 
-        android.util.Log.d(
-            "RANG_AI",
-            "Uploading started: $fileName"
-        )
+        try {
+            bucket.upload(path = fileName, data = imageBytes) {
+                upsert = true
+            }
+        } catch (e: Exception) {
+            val message = e.message.orEmpty()
+            android.util.Log.e("RANG_AI", "Upload failed: $message", e)
+            if (message.contains("Bucket not found", ignoreCase = true)) {
+                throw IllegalStateException(
+                    "Supabase bucket \"$BUCKET_NAME\" was not found. " +
+                        "Create a public bucket with that name in your Supabase project.",
+                    e
+                )
+            }
+            throw e
+        }
 
-        bucket.upload(
-            path = fileName,
-            data = imageBytes
-        )
+        android.util.Log.d("RANG_AI", "Upload completed")
 
-        android.util.Log.d(
-            "RANG_AI",
-            "Upload completed"
-        )
-
-        val publicUrl =
-            bucket.publicUrl(fileName)
-
-        android.util.Log.d(
-            "RANG_AI",
-            "Public URL: $publicUrl"
-        )
+        val publicUrl = bucket.publicUrl(fileName)
+        android.util.Log.d("RANG_AI", "Public URL: $publicUrl")
 
         return publicUrl
     }

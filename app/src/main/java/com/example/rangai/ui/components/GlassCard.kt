@@ -37,7 +37,7 @@ fun GlassCard(
             .fillMaxWidth()
             .alpha(alpha),
         shape = CardShape,
-        color = DarkSurface.copy(alpha = 0.75f),
+        color = DarkSurface.copy(alpha = 0.88f),
         shadowElevation = elevation,
         border = BorderStroke(1.dp, GlassBorder),
         tonalElevation = 2.dp

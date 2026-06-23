@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Cake
-import androidx.compose.material.icons.outlined.ArrowForward
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +25,7 @@ import com.example.rangai.ui.components.PremiumTextField
 
 @Composable
 fun ProfileSetupScreen(
-    onContinue: () -> Unit
+    onContinue: (String, Int) -> Unit
 ) {
 
     var name by remember {
@@ -105,11 +105,10 @@ fun ProfileSetupScreen(
                             name.isNotBlank() &&
                             age.isNotBlank()
                         ) {
-                            onContinue()
+                            onContinue(name, age.toInt())
                         }
                     },
-                    icon =
-                        Icons.Outlined.ArrowForward
+                    icon = Icons.AutoMirrored.Outlined.ArrowForward
                 )
             }
         }

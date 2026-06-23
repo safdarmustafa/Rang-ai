@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    kotlin("plugin.serialization") version "2.2.0"
 }
 android {
 
@@ -100,15 +101,22 @@ dependencies {
 
     // ViewModel
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7")
 
     // Coil
     implementation("io.coil-kt:coil-compose:2.7.0")
+// data local repo file dependecy 
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // Supabase
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.1.4")
     implementation("io.github.jan-tennert.supabase:storage-kt:3.1.4")
     implementation("io.github.jan-tennert.supabase:auth-kt:3.1.4")
     implementation("io.ktor:ktor-client-okhttp:3.1.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+
+    // SMS OTP auto-read (Google User Consent API)
+    implementation("com.google.android.gms:play-services-auth-api-phone:18.1.0")
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))

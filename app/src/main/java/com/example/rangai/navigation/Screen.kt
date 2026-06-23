@@ -8,7 +8,12 @@ sealed class Screen(val route: String) {
     data object Login : Screen("login")
     data object Otp : Screen("otp")
 
-    data object Profile : Screen("profile")
+    /** First-time profile creation after OTP. */
+    data object ProfileSetup : Screen("profile_setup")
+
+    /** Logged-in user profile view & logout. */
+    data object UserProfile : Screen("user_profile")
+
     data object Home : Screen("home")
 
     object Result : Screen("result/{imageUrl}/{originalUri}") {

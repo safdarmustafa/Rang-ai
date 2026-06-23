@@ -27,6 +27,7 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,9 +39,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -52,7 +55,11 @@ import com.example.rangai.ui.components.GlassCard
 import com.example.rangai.ui.components.GradientButton
 import com.example.rangai.ui.components.PremiumBackground
 import com.example.rangai.ui.components.PremiumLoadingOverlay
+import com.example.rangai.ui.components.PremiumTopBar
+import com.example.rangai.ui.theme.ErrorRed
 import com.example.rangai.ui.theme.ImagePreviewShape
+import com.example.rangai.ui.theme.SoftRoseAccent
+import com.example.rangai.ui.theme.TextPrimary
 import com.example.rangai.ui.theme.TextSecondary
 import com.example.rangai.ui.theme.TextTertiary
 import com.example.rangai.ui.theme.WarmRedAccent
@@ -66,6 +73,7 @@ fun HomeScreen(
     val homeViewModel: HomeViewModel = viewModel()
     val context = LocalContext.current
     val isLoading by homeViewModel.isLoading.collectAsState()
+    val errorMessage by homeViewModel.errorMessage.collectAsState()
 
     val enhancedImageUrl by homeViewModel
         .enhancedImageUrl
@@ -83,6 +91,7 @@ fun HomeScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         selectedImageUri = uri
+        homeViewModel.clearError()
     }
 
     LaunchedEffect(enhancedImageUrl) {
@@ -98,190 +107,195 @@ fun HomeScreen(
     }
 
     PremiumBackground {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 24.dp)
-                    .padding(top = 56.dp, bottom = 32.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                HomeHeader()
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                ImagePreviewCard(
-                    selectedImageUri = selectedImageUri
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Text(
-                    text = "Enhancement Quality",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = TextSecondary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)
-                )
-
-                EnhancementChipRow(
-                    hdSelected = selectedEnhancement == EnhancementType.HD,
-                    onHdClick = { selectedEnhancement = EnhancementType.HD },
-                    onUltraHdClick = { selectedEnhancement = EnhancementType.ULTRA_HD }
-                )
-
-                Spacer(modifier = Modifier.height(28.dp))
-
-                GradientButton(
-                    text = "Select Image",
-                    onClick = {
-                        launcher.launch(
-                            PickVisualMediaRequest(
-                                ActivityResultContracts.PickVisualMedia.ImageOnly
-                            )
-                        )
-                    },
-                    icon = Icons.Outlined.AddPhotoAlternate
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                GradientButton(
-                    text = if (isLoading) "Enhancing..." else "Enhance Image",
-                    onClick = {
-                        Log.d("RANG_AI", "Enhance button clicked")
-
-                        selectedImageUri?.let { uri ->
-                            Log.d("RANG_AI", "Uri found: $uri")
-
-                            val originalBytes = context.contentResolver
-                                .openInputStream(uri)
-                                ?.readBytes()
-
-                            if (originalBytes != null) {
-                                val bitmap = BitmapFactory.decodeByteArray(
-                                    originalBytes,
-                                    0,
-                                    originalBytes.size
-                                )
-
-                                val originalWidth = bitmap.width
-                                val originalHeight = bitmap.height
-
-                                val maxDimension = maxOf(
-                                    originalWidth,
-                                    originalHeight
-                                )
-
-                                val scaleFactor = 1024f / maxDimension
-
-                                val newWidth =
-                                    (originalWidth * scaleFactor).toInt()
-
-                                val newHeight =
-                                    (originalHeight * scaleFactor).toInt()
-
-                                Log.d(
-                                    "RANG_AI",
-                                    "Original Size = ${originalWidth}x${originalHeight}"
-                                )
-
-                                Log.d(
-                                    "RANG_AI",
-                                    "Resized Size = ${newWidth}x${newHeight}"
-                                )
-
-                                val resizedBitmap = Bitmap.createScaledBitmap(
-                                    bitmap,
-                                    newWidth,
-                                    newHeight,
-                                    true
-                                )
-
-                                val outputStream = ByteArrayOutputStream()
-
-                                resizedBitmap.compress(
-                                    Bitmap.CompressFormat.JPEG,
-                                    90,
-                                    outputStream
-                                )
-
-                                val resizedBytes = outputStream.toByteArray()
-
-                                Log.d(
-                                    "RANG_AI",
-                                    "Original Bytes = ${originalBytes.size}"
-                                )
-
-                                Log.d(
-                                    "RANG_AI",
-                                    "Resized Bytes = ${resizedBytes.size}"
-                                )
-
-                                val scale = when (selectedEnhancement) {
-                                    EnhancementType.HD -> 2
-                                    EnhancementType.ULTRA_HD -> 4
-                                }
-
-                                homeViewModel.startEnhancing(
-                                    imageBytes = resizedBytes,
-                                    scale = scale
-                                )
-                                Log.d(
-                                    "RANG_AI",
-                                    "Selected Enhancement = $selectedEnhancement"
-                                )
-
-                                Log.d(
-                                    "RANG_AI",
-                                    "Scale = $scale"
-                                )
-                            }
-                        }
-                    },
-                    enabled = selectedImageUri != null && !isLoading,
-                    isLoading = isLoading,
-                    icon = Icons.Outlined.AutoAwesome
+        Scaffold(
+            containerColor = Color.Transparent,
+            topBar = {
+                PremiumTopBar(
+                    title = "Rang AI",
+                    subtitle = "Premium AI Photo Enhancement",
+                    onProfileClick = {
+                        navController.navigate(Screen.UserProfile.route)
+                    }
                 )
             }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .verticalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 8.dp, bottom = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    HomeWelcomeSection()
 
-            if (isLoading) {
-                PremiumLoadingOverlay()
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    ImagePreviewCard(selectedImageUri = selectedImageUri)
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    SectionLabel(text = "Enhancement Quality")
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    EnhancementChipRow(
+                        hdSelected = selectedEnhancement == EnhancementType.HD,
+                        onHdClick = { selectedEnhancement = EnhancementType.HD },
+                        onUltraHdClick = { selectedEnhancement = EnhancementType.ULTRA_HD }
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    GradientButton(
+                        text = "Select Image",
+                        onClick = {
+                            launcher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
+                        },
+                        icon = Icons.Outlined.AddPhotoAlternate
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage!!,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ErrorRed,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+                    }
+
+                    GradientButton(
+                        text = if (isLoading) "Enhancing..." else "Enhance Image",
+                        onClick = {
+                            Log.d("RANG_AI", "Enhance button clicked")
+
+                            selectedImageUri?.let { uri ->
+                                Log.d("RANG_AI", "Uri found: $uri")
+
+                                val originalBytes = context.contentResolver
+                                    .openInputStream(uri)
+                                    ?.readBytes()
+
+                                if (originalBytes != null) {
+                                    val bitmap = BitmapFactory.decodeByteArray(
+                                        originalBytes,
+                                        0,
+                                        originalBytes.size
+                                    )
+
+                                    if (bitmap == null) {
+                                        Log.e("RANG_AI", "Could not decode selected image")
+                                        homeViewModel.reportError(
+                                            "Could not read this image. Try a JPG or PNG from your gallery."
+                                        )
+                                        return@let
+                                    }
+
+                                    val originalWidth = bitmap.width
+                                    val originalHeight = bitmap.height
+                                    val maxDimension = maxOf(originalWidth, originalHeight)
+                                    val scaleFactor = 1024f / maxDimension
+                                    val newWidth = (originalWidth * scaleFactor).toInt()
+                                    val newHeight = (originalHeight * scaleFactor).toInt()
+
+                                    val resizedBitmap = Bitmap.createScaledBitmap(
+                                        bitmap,
+                                        newWidth,
+                                        newHeight,
+                                        true
+                                    )
+
+                                    val outputStream = ByteArrayOutputStream()
+                                    resizedBitmap.compress(
+                                        Bitmap.CompressFormat.JPEG,
+                                        90,
+                                        outputStream
+                                    )
+
+                                    val resizedBytes = outputStream.toByteArray()
+                                    val scale = when (selectedEnhancement) {
+                                        EnhancementType.HD -> 2
+                                        EnhancementType.ULTRA_HD -> 4
+                                    }
+
+                                    homeViewModel.startEnhancing(
+                                        imageBytes = resizedBytes,
+                                        scale = scale
+                                    )
+                                } else {
+                                    Log.e("RANG_AI", "Could not read image bytes from URI")
+                                    homeViewModel.reportError(
+                                        "Could not open the selected image. Please try another photo."
+                                    )
+                                }
+                            }
+                        },
+                        enabled = selectedImageUri != null && !isLoading,
+                        isLoading = isLoading,
+                        icon = Icons.Outlined.AutoAwesome
+                    )
+                }
+
+                if (isLoading) {
+                    PremiumLoadingOverlay()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun HomeHeader() {
+private fun HomeWelcomeSection() {
     AnimatedVisibility(
         visible = true,
         enter = fadeIn() + slideInVertically { it / 4 }
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Rang AI",
-                style = MaterialTheme.typography.displayMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                fontWeight = FontWeight.Bold
+                text = "Transform Your Photos",
+                style = MaterialTheme.typography.headlineSmall,
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
             Text(
-                text = "Premium AI Photo Enhancement",
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary
-            )
-            Text(
-                text = "Transform ordinary photos into stunning visuals",
-                style = MaterialTheme.typography.bodySmall,
-                color = TextTertiary
+                text = "Select an image and enhance it with AI-powered upscaling",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextSecondary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
             )
         }
     }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleMedium,
+        color = TextPrimary,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
@@ -291,7 +305,7 @@ private fun ImagePreviewCard(
     GlassCard(
         modifier = Modifier
             .fillMaxWidth()
-            .height(340.dp)
+            .height(320.dp)
     ) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -309,23 +323,26 @@ private fun ImagePreviewCard(
             } else {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Image,
                         contentDescription = null,
-                        tint = WarmRedAccent.copy(alpha = 0.6f),
-                        modifier = Modifier.size(56.dp)
+                        tint = SoftRoseAccent,
+                        modifier = Modifier.size(52.dp)
                     )
                     Text(
                         text = "No Image Selected",
                         style = MaterialTheme.typography.titleMedium,
-                        color = TextSecondary
+                        color = TextPrimary,
+                        fontWeight = FontWeight.SemiBold
                     )
                     Text(
-                        text = "Choose a photo to enhance",
+                        text = "Tap below to choose a photo from your gallery",
                         style = MaterialTheme.typography.bodySmall,
-                        color = TextTertiary
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center
                     )
                 }
             }

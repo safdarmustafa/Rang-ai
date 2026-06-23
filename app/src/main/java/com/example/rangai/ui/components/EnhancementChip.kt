@@ -27,9 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.rangai.ui.theme.BurgundySecondary
 import com.example.rangai.ui.theme.ChipShape
+import com.example.rangai.ui.theme.DarkSurfaceVariant
 import com.example.rangai.ui.theme.GradientMaroonEnd
 import com.example.rangai.ui.theme.GradientMaroonStart
 import com.example.rangai.ui.theme.GlassBorder
+import com.example.rangai.ui.theme.SoftRoseAccent
 import com.example.rangai.ui.theme.TextPrimary
 import com.example.rangai.ui.theme.TextSecondary
 import com.example.rangai.ui.theme.TextTertiary
@@ -45,8 +47,8 @@ fun EnhancementChip(
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (selected) BurgundySecondary.copy(alpha = 0.4f)
-        else TextTertiary.copy(alpha = 0.08f),
+        targetValue = if (selected) BurgundySecondary.copy(alpha = 0.55f)
+        else DarkSurfaceVariant.copy(alpha = 0.9f),
         animationSpec = tween(250),
         label = "chipBg"
     )
@@ -81,18 +83,18 @@ fun EnhancementChip(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (selected) WarmRedAccent else TextSecondary,
+            tint = if (selected) WarmRedAccent else SoftRoseAccent.copy(alpha = 0.9f),
             modifier = Modifier.size(24.dp)
         )
         Text(
             text = label,
-            color = if (selected) TextPrimary else TextSecondary,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+            color = TextPrimary,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.SemiBold,
             style = androidx.compose.material3.MaterialTheme.typography.titleSmall
         )
         Text(
             text = subtitle,
-            color = TextTertiary,
+            color = if (selected) TextSecondary else TextTertiary,
             style = androidx.compose.material3.MaterialTheme.typography.labelSmall
         )
     }

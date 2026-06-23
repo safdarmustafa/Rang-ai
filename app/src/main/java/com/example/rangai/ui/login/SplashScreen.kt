@@ -36,6 +36,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.rangai.auth.SplashUiState
 import com.example.rangai.ui.components.PremiumBackground
 import com.example.rangai.ui.theme.GradientMaroonEnd
 import com.example.rangai.ui.theme.GradientMaroonStart
@@ -43,11 +44,12 @@ import com.example.rangai.ui.theme.MaroonPrimary
 import com.example.rangai.ui.theme.TextSecondary
 import com.example.rangai.ui.theme.TextTertiary
 import com.example.rangai.ui.theme.WarmRedAccent
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
 fun SplashScreen(
+    splashState: SplashUiState,
+    onNavigateToHome: () -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
     val scale = remember { Animatable(0.85f) }
@@ -66,8 +68,14 @@ fun SplashScreen(
                 animationSpec = tween(500)
             )
         }
-        delay(1000)
-        onNavigateToLogin()
+    }
+
+    LaunchedEffect(splashState) {
+        when (splashState) {
+            SplashUiState.Loading -> Unit
+            is SplashUiState.Authenticated -> onNavigateToHome()
+            SplashUiState.Unauthenticated -> onNavigateToLogin()
+        }
     }
 
     val infiniteTransition = rememberInfiniteTransition(label = "splashPulse")

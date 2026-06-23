@@ -28,6 +28,15 @@ class ReplicateRepository {
                     request
                 )
 
+            if (!createResponse.isSuccessful) {
+                val errorBody = createResponse.errorBody()?.string()
+                Log.e(
+                    "RANG_AI",
+                    "Replicate create failed — HTTP ${createResponse.code()} body=$errorBody"
+                )
+                return null
+            }
+
             val prediction =
                 createResponse.body()
 
@@ -72,6 +81,14 @@ class ReplicateRepository {
                     ReplicateClient.api.getPrediction(
                         getUrl
                     )
+
+                if (!resultResponse.isSuccessful) {
+                    Log.e(
+                        "RANG_AI",
+                        "Replicate poll failed — HTTP ${resultResponse.code()}"
+                    )
+                    return null
+                }
 
                 val result =
                     resultResponse.body()
